@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Blocks all the outgoing clicks from gmail",
+  "version": "1.0",
+  "description": "For security reasons",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": ["activeTab"],
+  "content_scripts": [
+    {
+      "matches": ["*://mail.google.com/*"],
+      "js": ["content.js"]
+    }
+  ]
+}
