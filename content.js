@@ -91,6 +91,7 @@ document.addEventListener("click", function(event) {
         // if URL starts from gmail redirect, then extract the actual url
         if (href.startsWith(GMAIL_URL_PREFIX)) {
             href = href.slice(GMAIL_URL_PREFIX.length);
+            href = decodeURIComponent(href);
         }
 
         let url;
@@ -101,8 +102,14 @@ document.addEventListener("click", function(event) {
             url    = new URL(href.toString());
             domain = url.host;
         } catch (e) {
-            e.preventDefault();
-            showConfirm('Invalid URL, blocked');
+            // TODO: are there any urls which are considered invalid but still should be clickable?
+            // e.g. some special protocols / app-specific urls etc,
+            event.preventDefault();
+            showConfirm('Invalid URL, recommendation is to not proceed. Click "Yes" to proceed anyway.',
+                () => {
+                    window.open(href, '_blank');
+                },
+                () => {});
             return;
         }
         
