@@ -19,67 +19,66 @@ function sanitizeInput(input) {
     const reg = /[&<>"'/]/ig;
     return input.replace(reg, (match) => (map[match]));
 }
-
-// Example usage:
-const userInput = "<script>alert('XSS');</script>";
-const sanitizedInput = sanitizeInput(userInput);
-console.log(sanitizedInput); // Output will be safe to display
-
-
 function showConfirm(prompt, confirmCallback, rejectCallback) {
     // Create the overlay
     const overlay = document.createElement('div');
     overlay.id = 'customOverlay';
-    overlay.style.position = 'fixed';
-    overlay.style.left = '0';
-    overlay.style.top = '0';
-    overlay.style.width = '100%';
-    overlay.style.height = '100%';
-    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-    overlay.style.zIndex = '999';
-  
+    overlay.style.cssText = `
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+    `;
+
     // Create the popup
     const popup = document.createElement('div');
     popup.id = 'customConfirm';
-    popup.style.position = 'fixed';
-    popup.style.left = '50%';
-    popup.style.top = '50%';
-    popup.style.transform = 'translate(-50%, -50%)';
-    popup.style.background = 'white';
-    popup.style.border = '1px solid #ccc';
-    popup.style.padding = '20px';
-    popup.style.zIndex = '1000';
-  
+    popup.style.cssText = `
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        border: 1px solid #ccc;
+        padding: 20px;
+        width: auto;
+        max-width: 500px;
+        text-align: center;
+    `; // Removed z-index from here as it's now redundant
+
     // Add content to the popup
     popup.innerHTML = `
-      <p>${prompt}</p>
-      ${confirmCallback && '<button id="confirmYes">Yes</button>'}
-      ${rejectCallback && '<button id="confirmNo">No</button>'}
+      <p style="margin-bottom: 20px;">${prompt}</p>
+      ${confirmCallback ? '<button id="confirmYes" style="margin-right: 10px;">Yes</button>' : ''}
+      ${rejectCallback ? '<button id="confirmNo">No</button>' : ''}
     `;
   
-    // Append overlay and popup to body
+    // Append popup to overlay, then overlay to body
+    overlay.appendChild(popup); // This line is changed
     document.body.appendChild(overlay);
-    document.body.appendChild(popup);
   
     // Function to remove popup
     function removePopup() {
-      document.body.removeChild(popup);
-      document.body.removeChild(overlay);
+        document.body.removeChild(overlay);
     }
   
-    // Handle "Yes" button click
-    document.getElementById('confirmYes').addEventListener('click', function() {
-        confirmCallback && confirmCallback();
-        removePopup();
+    // Enhanced event handling
+    overlay.addEventListener('click', function(event) {
+        if (event.target.id === 'confirmYes') {
+            confirmCallback && confirmCallback();
+            removePopup();
+        } else if (event.target.id === 'confirmNo') {
+            rejectCallback && rejectCallback();
+            removePopup();
+        }
     });
-  
-    // Handle "No" button click
-    document.getElementById('confirmNo').addEventListener('click', function() {
-        rejectCallback && rejectCallback();
-        removePopup();
-    });
-  }
-  
+}
+
+
 
 document.addEventListener("click", function(event) {
     const targetElement  = event.target;
@@ -115,12 +114,12 @@ document.addEventListener("click", function(event) {
         }
 
         // prompt with sanitized domain - just in case, everything coming from user should be sanitized
-        const propmt = "Are you sure you want to go there?\n\n" + sanitizeInput(domain);
+        const propmt = `Are you sure you want to go there?<br/><br/>  <b>${sanitizeInput(domain)}</b>`
     
         // Prevent and alert
         showConfirm(propmt, () => {
             window.open(href, '_blank');
-        });
+        }, () => {});
 
         event.preventDefault();
     }
