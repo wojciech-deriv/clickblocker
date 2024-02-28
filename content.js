@@ -5,6 +5,7 @@ const ALLOWED_PREFIXES = [
     'https://mail.google.com/',
     'https://clickup.com/',
     'https://github.com/binary-com/',
+    'https://forms.gle/',
 ];
 
 function sanitizeInput(input) {
